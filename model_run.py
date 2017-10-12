@@ -1,16 +1,12 @@
 """
 Kimmy McCormack
 
-Subduction Zone coupled poroelastic model. Creates a synthetic slip patch along the subduction zone fault plane.
-Can either simulate an earthquake or a SSE. Outputs the deformation and pore pressure change as a result of
+Subduction Zone coupled poroelastic model. Imposes either synthetic or data-derived deformation (slip) along the subduction zone fault plane.
+Can simulate an earthquake, Slow slip event, subduction or a combination of these. Outputs the deformation and pore pressure change as a result of
 imposed slip along the boundary
 
 Units are in meters and MPa
 
-TO RUN: 1) Open Fenics (this opens a terminal window)
-        2) Change the path of the mesh files to the location on your computer (lines 42 and 45)
-        3) Go to directory where this file is located
-        4) run "python ./CR_2D_poroelastic.py"
 
 ########################### USER INPUTS ##################################
 
@@ -87,12 +83,17 @@ u0_SSE = -.006
 SS_migrate = 0.0
 surface_k2D = -12
 depth_kappa = -20 #log of permeability at depth
+
+# parameters that allow for overpressured rock to "frack" and increase permeability - still in development. These parameters
+# get passed to the FEM functions, but are not used
 k_frack = 1e7 # increase in permeability during fracking
 percent_lith = .985 # what percent of lithostatic is your pore pressure?
 dehydrate_depths = 1e3*np.linspace(-30, -55, num=200, endpoint=False)
 h20flux = 2.5e-10
 dehydrate_flux = (h20flux/len(dehydrate_depths))*np.ones(len(dehydrate_depths))  # m/sec * dt
-xstick = 110e3 # distance from trench transition from stick to sliding behavior occurs
+
+
+xstick = 110e3 # distance from trench transition from stick to sliding behavior occurs (50% coupling point)
 B = 0.6 # Skempton's coefficient
 
 
