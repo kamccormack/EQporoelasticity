@@ -22,13 +22,10 @@ variable = 'sigma' #sigma or kappa
 resultspath = 'results/numpy_results/'
 variablespath = 'results/numpy_variables/'
 
-
 x_all = np.load(variablespath+"x_all_2D.npy")
 y_all = np.load(variablespath+"y_all_2D.npy")
 surface_dofs = np.load(variablespath+"surface_dofs_2D.npy")
 ocean_dofs = np.load(variablespath+"ocean_dofs_2D.npy")
-#elastic_drained = np.load(resultspath+"Sol_surf_drained_2D.npy")
-#elastic_undrained = np.load(resultspath+"Sol_surf_undrained_2D.npy")
 size_p = np.load(variablespath+"size_p_CR_2D.npy")
 
 
@@ -100,18 +97,6 @@ elif event == 'topo':
     dtt_subEQ = np.load(variablespath+"dtt_comsum_sub_EQ.npy")
 
 
-#GPS data
-gps_file = 'data/GPS_displacement.xlsx'
-gps_wb = pyxl.load_workbook(gps_file)
-gps_data = gps_wb['Sheet2']
-gps_X = np.array ([[gps_data.cell(row = i, column = 1).value]
-                   for i in range(2, gps_data.max_row +1)]).reshape(gps_data. max_row - 1, )
-gps_Ux = 0.1*np.array ([[gps_data.cell(row = i, column = 3).value]
-                        for i in range(2, gps_data.max_row +1)]).reshape(gps_data. max_row - 1, )
-gps_Uz = 0.1*np.array ([[gps_data.cell(row = i, column = 5).value]
-                        for i in range(2, gps_data.max_row +1)]).reshape(gps_data. max_row - 1, )
-
-
 
 ##########################################################################
 ###################### PARSE AND SORT VARIABLES ##########################
@@ -122,43 +107,12 @@ size_u_surf = x_all[surface_dofs].shape[0]
 size_ux = (size_u_surf - p_ind) / 2
 ux_ind = p_ind + size_ux
 
-p_ind_o = np.argmax(ocean_dofs >= size_p)
-size_u_ocean = x_all[ocean_dofs].shape[0]
-size_ux_o = (size_u_ocean - p_ind_o) / 2
-ux_ind_o = p_ind_o + size_ux_o
-#print surface_dofs.shape
-#print p_ind, ux_ind, ux_ind-p_ind
 
-
-"""
-ocean_dof_p = ocean_dofs[0:p_ind_ocean]
-ocean_dof_ux = ocean_dofs[p_ind:ux_ind_ocean]
-ocean_dof_uy = ocean_dofs[ux_ind_ocean::]
-"""
 surface_dof_p = surface_dofs[0:p_ind][np.argsort(x_all[surface_dofs[0:p_ind]])]
 surface_dof_ux = surface_dofs[p_ind:ux_ind][np.argsort(x_all[surface_dofs[p_ind:ux_ind]])]
 surface_dof_uy = surface_dofs[ux_ind::][np.argsort(x_all[surface_dofs[ux_ind::]])]
 sort_p, sort_u = np.argsort(x_all[surface_dofs[0:p_ind]]), np.argsort(x_all[surface_dofs[ux_ind::]])
 
-ocean_dof_p = ocean_dofs[0:p_ind_o][np.argsort(x_all[ocean_dofs[0:p_ind_o]])]
-ocean_dof_ux = ocean_dofs[p_ind_o:ux_ind_o][np.argsort(x_all[ocean_dofs[p_ind_o:ux_ind_o]])]
-ocean_dof_uy = ocean_dofs[ux_ind_o::][np.argsort(x_all[ocean_dofs[ux_ind_o::]])]
-sort_po, sort_uo = np.argsort(x_all[ocean_dofs[0:p_ind_o]]), np.argsort(x_all[ocean_dofs[ux_ind_o::]])
-
-sort_p_all, sort_u_all = np.concatenate((sort_po,sort_p )), np.concatenate((sort_uo,sort_u))
-
-
-# print '#################'
-# print surface_dof_ux[0:10]
-# print x_all[surface_dof_ux][0:10]
-# print '#################'
-#
-# #print np.argsort(x_all[surface_dofs[p_ind:ux_ind]])[0:20]
-# print sort_u[0:10]
-# print x_all[surface_dofs[p_ind:ux_ind]][sort_u][0:10]
-# print '#################'
-# print np.argsort(x_all[surface_dofs[p_ind:ux_ind]])[0:10]
-# print x_all[surface_dofs[np.argsort(x_all[surface_dofs[p_ind:ux_ind]])]][0:10]
 
 x_surf_p = 1e-3*x_all[surface_dof_p]
 x_surf_ux = 1e-3*x_all[surface_dof_ux]
@@ -185,20 +139,7 @@ if loop == 'yes':
         Sol_surf_yk12 = Sol_surfk12[ux_ind::, :][sort_u, :] * 1e2
         Sol_surf_yk13 = Sol_surfk13[ux_ind::, :][sort_u, :] * 1e2
 
-        # Sol_surf_pk10 = Sol_surfk10[0:p_ind, :][sort_p_all, :] * (1e3 / (9.81))
-        # Sol_surf_pk11 = Sol_surf[0:p_ind, :][sort_p_all, :] * (1e3 / (9.81))
-        # Sol_surf_pk12 = Sol_surfk12[0:p_ind, :][sort_p_all, :] * (1e3 / (9.81))
-        # Sol_surf_pk13 = Sol_surfk13[0:p_ind, :][sort_p_all, :] * (1e3 / (9.81))
-        #
-        # Sol_surf_xk10 = Sol_surfk10[p_ind:ux_ind, :][sort_u_all, :] * 1e2
-        # Sol_surf_xk11 = Sol_surf[p_ind:ux_ind, :][sort_u_all, :] * 1e2
-        # Sol_surf_xk12 = Sol_surfk12[p_ind:ux_ind, :][sort_u_all, :] * 1e2
-        # Sol_surf_xk13 = Sol_surfk13[p_ind:ux_ind, :][sort_u_all, :] * 1e2
-        #
-        # Sol_surf_yk10 = Sol_surfk10[ux_ind::, :][sort_u_all, :] * 1e2
-        # Sol_surf_yk11 = Sol_surf[ux_ind::, :][sort_u_all, :] * 1e2
-        # Sol_surf_yk12 = Sol_surfk12[ux_ind::, :][sort_u_all, :] * 1e2
-        # Sol_surf_yk13 = Sol_surfk13[ux_ind::, :][sort_u_all, :] * 1e2
+
 
     if variable == 'sigma':
         Sol_surf_p10 = Sol_surf10[0:p_ind, :][sort_p, :] * (1e3 / (9.81))
@@ -215,23 +156,6 @@ if loop == 'yes':
         Sol_surf_y15 = Sol_surf[ux_ind::, :][sort_u, :] * 1e2
         Sol_surf_y20 = Sol_surf20[ux_ind::, :][sort_u, :] * 1e2
         Sol_surf_y25 = Sol_surf25[ux_ind::, :][sort_u, :] * 1e2
-        #
-        # Sol_surf_p10 = Sol_surf10[0:p_ind, :][sort_p_all, :] * (1e3 / (9.81))
-        # Sol_surf_p15 = Sol_surf[0:p_ind, :][sort_p_all, :] * (1e3 / (9.81))
-        # Sol_surf_p20 = Sol_surf20[0:p_ind, :][sort_p_all, :] * (1e3 / (9.81))
-        # Sol_surf_p25 = Sol_surf25[0:p_ind, :][sort_p_all, :] * (1e3 / (9.81))
-        #
-        # Sol_surf_x10 = Sol_surf10[p_ind:ux_ind, :][sort_u_all, :] * 1e2
-        # Sol_surf_x15 = Sol_surf[p_ind:ux_ind, :][sort_u_all, :] * 1e2
-        # Sol_surf_x20 = Sol_surf20[p_ind:ux_ind, :][sort_u_all, :] * 1e2
-        # Sol_surf_x25 = Sol_surf25[p_ind:ux_ind, :][sort_u_all, :] * 1e2
-        #
-        # Sol_surf_y10 = Sol_surf10[ux_ind::, :][sort_u_all, :] * 1e2
-        # Sol_surf_y15 = Sol_surf[ux_ind::, :][sort_u_all, :] * 1e2
-        # Sol_surf_y20 = Sol_surf20[ux_ind::, :][sort_u_all, :] * 1e2
-        # Sol_surf_y25 = Sol_surf25[ux_ind::, :][sort_u_all, :] * 1e2
-
-
 
 else:
 
@@ -241,35 +165,6 @@ else:
 
 nsteps = dtt.size
 y_surf_zero = y_surf_ux - y_surf_ux
-
-"""e_drained_x = elastic_drained[0:size_ux][sort_u]
-e_drained_y = elastic_drained[size_ux::][sort_u]
-e_undrained_x = elastic_undrained[0:size_ux][sort_u]
-e_undrained_y = elastic_undrained[size_ux::][sort_u]"""
-
-#Sol_surf_x_post = Sol_surf_x - np.transpose(np.tile(Sol_surf_x[:,0], (nsteps,1)))
-#Sol_surf_y_post = Sol_surf_y - np.transpose(np.tile(Sol_surf_y[:,0], (nsteps,1)))
-#Sol_surf_p_post = Sol_surf_p - np.transpose(np.tile(Sol_surf_p[:,0], (nsteps,1)))
-
-#print Sol_surf_x_post.max(), Sol_surf_x_post.min()
-#print Sol_surf_x.max(), Sol_surf_x.min()
-
-"""
-undrained_diff_x, undrained_diff_y = Sol_surf_x[:,0] - e_undrained_x, Sol_surf_y[:,0] - e_undrained_y
-drained_diff_x, drained_diff_y = Sol_surf_x[:, -1] - e_drained_x, Sol_surf_y[:,-1] - e_drained_y
-
-elastic_results_x  = np.empty((e_drained_x.shape[0],2))
-elastic_results_y  = np.empty((e_drained_x.shape[0],2))
-
-if event == 'sub_EQ':
-    for j in range(0,e_drained_x.shape[0]):
-        elastic_results_x[j,:] = np.array([e_undrained_x[j], e_drained_x[j]]) + np.array([Sol_surf_x[j,sub_cycle-1],Sol_surf_x[j,sub_cycle-1]])
-        elastic_results_y[j,:] = np.array([e_undrained_y[j], e_drained_y[j]]) + np.array([Sol_surf_y[j,sub_cycle-1],Sol_surf_y[j,sub_cycle-1]])
-else:
-    for j in range(0,e_drained_x.shape[0]):
-        elastic_results_x[j,:] = np.array([e_undrained_x[j], e_drained_x[j]])
-        elastic_results_y[j,:] = np.array([e_undrained_y[j], e_drained_y[j]])
-"""
 
 
 ##########################################################################
@@ -336,11 +231,7 @@ if event == 'sub_EQ':
     x_elastic = np.array([dtt[sub_cycle],dtt[-1]]) #timesteps to plot elastic solution
 else:
     x_elastic = np.array([dtt[0],dtt[-1]])
-# convert sea flux from m/s to m/day
-#sea_flux = sea_flux*(3600*24)
 
-#convert MPa to well head change (meters)
-#Sol_surf_p9[:] = Sol_surf_pk9[:]*1e3/(9.81)
 
 
 ##########################################################################
@@ -969,7 +860,6 @@ plot_surface_loop()
 
 
 
-#plt.show()
 
 
 
