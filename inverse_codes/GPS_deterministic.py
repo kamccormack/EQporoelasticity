@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/fenics/shared/local_lib')
+sys.path.append('/fenics/shared/local_lib')
 import petsc4py as p4p
 from petsc4py.PETSc import Mat
 from dolfin import *
@@ -19,14 +19,7 @@ import time
 
 parameters.reorder_dofs_serial = False
 
-"""
-TO DO:
-
-print out misfit, cost, reg
-build matern type reg matrix.... maybe not?
-
-"""
-dir_path = '/home/fenics/shared/'
+dir_path = '/fenics/shared/'
 
 def u_boundary(x, on_boundary):
     return on_boundary
@@ -199,7 +192,6 @@ class Elasticity:
         if not os.path.exists(self.paraviewpath):
             os.makedirs(self.paraviewpath)
 
-
         self.mesh = mesh
         self.boundaries = boundaries
         self.Vh = Vh
@@ -233,12 +225,7 @@ class Elasticity:
 
         print "Gamma {0:5g}; Beta {1:5g}".format(self.gamma, self.beta)
 
-        # self.delta_b = 5e-6 * self.h  # Dirichlet control regularization on bottom boundary
-        # self.gamma = 4e3 # Laplace regularization constant
-        # self.beta = 5e-9 # mass matrix multiplier in reg.
-
         self.extract_coords()
-        #self.E = Expression('347 * pow(-x[2], 0.516) + 5.324e4', degree = 1)
         self.E = Expression('500 * pow(-x[2], 0.516) + 2e4', degree = 1)
 
         self.nu = 0.4  # Poisson's ratio
@@ -307,32 +294,13 @@ class Elasticity:
 
         Eps = MumpsSolver(self.E_state)
         Epa = MumpsSolver(self.E_adj)
-        #Rp = MumpsSolver(self.RR_grad)
-        #Rp = ILU(self.RR_grad) #LU solver works too (sometimes)
         Rp = Jacobi(self.RR_grad)
-        #Eps = Jacobi(self.E_state)
-        #Epa = Jacobi(self.E_adj)
-
-        #Rp = AMG(self.RR_grad) #LU solver works too (sometimes)
-        #Eps = AMG(self.E_state)
-        #Epa = AMG(self.E_adj)
-
-        
-        # I = assemble(inner(self.u0, self.u0_test)*dx)
-        # Ip = LumpedInvDiag(I)
-
-        #Ip = LumpedInvDiag(self.RR_grad)
 
         # # Create preconditioners:
         AApre = block_mat([[Eps, 0, 0 ],
                            [0, Rp, 0 ],
                            [0, 0, Epa]])
 
-
-        # # Create the block inverse, using the preconditioned Minimum Residual method
-        # # (suitable for symmetric indefinite problems).
-        #self.AAinv = ConjGrad(self.AA, precond = AApre, tolerance = 1e-10, maxiter = 500, show = 2)
-        #self.AAinv = TFQMR(self.AA, precond = AApre, tolerance = 1e-10, maxiter = 500, show = 2)
         self.AAinv = BiCGStab(self.AA, precond = AApre)
         #self.AAinv = LGMRES(self.AA, precond = AApre)
 
@@ -355,8 +323,6 @@ class Elasticity:
         self.ocean_dofs = np.where(ptest.vector() == 1)[0]
         self.surface_dofs = np.where(ptest.vector() == 2)[0]
         self.slab_dofs = np.where(ptest.vector() == 3)[0]
-
-
 
         self.size_gps = self.targets.shape[0]
         size_w_gps = 3 * self.size_gps
