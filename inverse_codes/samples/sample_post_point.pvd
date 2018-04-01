@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<VTKFile type="Collection" version="0.1">
+  <Collection>
+    <DataSet timestep="0" part="0" file="sample_post_point000000.vtu" />
+    <DataSet timestep="1" part="0" file="sample_post_point000001.vtu" />
+    <DataSet timestep="2" part="0" file="sample_post_point000002.vtu" />
+    <DataSet timestep="3" part="0" file="sample_post_point000003.vtu" />
+    <DataSet timestep="4" part="0" file="sample_post_point000004.vtu" />
+  </Collection>
+</VTKFile>
