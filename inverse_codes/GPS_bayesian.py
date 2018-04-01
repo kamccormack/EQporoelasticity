@@ -1,5 +1,3 @@
-
-# from petsc4py import PETSc
 import petsc4py as p4p
 from dolfin import *
 import sys
@@ -16,8 +14,6 @@ import time
 
 parameters.reorder_dofs_serial = False
 dir_path = '/fenics/shared/'
-
-
 
 def u_boundary(x, on_boundary):
     return on_boundary
@@ -558,7 +554,6 @@ class Elasticity:
         self.Raa.mult(da, out)
 
 
-
 ################### SET UP MESH, MODEL PARAMETERS AND INPUT DATA ##########################################
 
 
@@ -668,8 +663,6 @@ if __name__ == "__main__":
     prior.sample(noise, s_prior.vector())
 
     File("results_point/prior_sample.pvd") << s_prior
-    
-    
 
     bcprior = DirichletBC(Vh[PARAMETER], (1,1,1), boundaries, 2)  # land surface
     priortest = Function(Vh[PARAMETER])
@@ -682,8 +675,6 @@ if __name__ == "__main__":
     print "Max surface deformation of Prior: ", s_prior.vector()[dof_surf_prior].max()
     print "Min surface deformation of Prior: ", s_prior.vector()[dof_surf_prior].min()
 
-    
-    #quit()
         
     print "Prior regularization: (delta - gamma*Laplacian)^order: delta={0}, gamma={1}, order={2}".format(delta, gamma,2)
     
@@ -705,8 +696,6 @@ if __name__ == "__main__":
 
     model = Elasticity(mesh, boundaries, Vh, u0true, targets, u_gps, prior, invGnoise, point_var, synthetic)
     
-
-
     print sep, "Test the gradient and the Hessian of the model: ",(time.time() - start) / 60.0, "minutes", sep
 
     #a0 = Function(Vh[PARAMETER])
@@ -715,9 +704,7 @@ if __name__ == "__main__":
 
     modelVerify(model, a0.vector(), 1e-12)
     
-    
     print sep, "Find the MAP point: ",(time.time() - start) / 60.0, "minutes", sep
-
 
     x = model.generate_vector()
     [u, a, p] = x
@@ -738,8 +725,6 @@ if __name__ == "__main__":
     d, U = doublePassG(H, prior.R, prior.Rsolver, Omega, k)
     
     print "eigenvalues", d
-    
-    #quit()
 
     posterior = GaussianLRPosterior(prior, d, U)
 
@@ -843,16 +828,3 @@ if __name__ == "__main__":
     np.savetxt("hmisfit/eigevalues_point.dat", d)
     
     print sep, "THE END: ",(time.time() - start) / 60.0, "minutes" , sep
-    
-    # print sep, "Visualize results", sep
-    # plot(xx[STATE], title = xxname[STATE])
-    # plot(exp(xx[PARAMETER]), title = xxname[PARAMETER])
-    # plot(xx[ADJOINT], title = xxname[ADJOINT])
-    #
-    # plt.figure()
-    # plt.plot(range(0,k), d, 'b*', range(0,k), np.ones(k), '-r')
-    # plt.yscale('log')
-    #
-    # plt.show()
-    # interactive()
-    
