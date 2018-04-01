@@ -36,6 +36,7 @@ SS_migrate =  migration of the SSE along the trench [meters/day]
 surface_k =  The  log of the permeability at the surface [m^2]
 
 EQ_type: 'data' - slip vectors input as an excel file,  'synthetic' - gaussian slip patch
+		'inversion' - pull solution from inverse model run
 
 """
 
@@ -44,20 +45,15 @@ from dolfin import *
 import numpy as np
 import time
 
-from poroelastic_master import *
-#from poroelastic_waves import *
-#from poroelastic_master_RT import *
-#from poroelastic_master import *
-#from poroelastic_master_RT import Poroelasticity2D, Poroelasticity3D, Laplace3D
+#choose between standard or mixed formulation for groundwater flow equation
+mixed_form = False
+
+if mixed_form:
+	from poroelastic_master_RT import *
+else:
+	from poroelastic_master import *
 
 start = time.time()
-
-#print list_linear_solver_methods()
-#print list_lu_solver_methods()
-#print list_linear_algebra_backends()
-#print list_krylov_solver_methods()
-#print list_krylov_solver_preconditioners()
-
 
 ##########################################################################
 ########################### USER INPUTS ##################################
@@ -70,12 +66,8 @@ plot_figs = 'no'
 new_mesh = 'yes'
 permeability = 'constant'
 data_file = '/fenics/shared/data/Data.xlsx'
-#data_file = '/workspace/kimmy/data/Data.xlsx'
-loop = 'yes'
-loop_variable = 'cross'  # 'sigma' for EQ size and 'kappa' for permeability
-
-#origin = np.array([-85.21, 8.64]) # origin of top surface of mesh - used as point of rotation
-#theta = 0.733 # angle of rotation between latitude line and fault trace (42 deg)
+loop = 'no'
+loop_variable = 'sigma'  # 'sigma' for EQ size and 'kappa' for permeability
 
 origin = np.array([-85.1688, 8.6925]) # origin of top surface of mesh - used as point of rotation
 theta = 0.816 # angle of rotation between latitude line and fault trace (42 deg)
@@ -95,13 +87,15 @@ u0_SSE = -.006
 SS_migrate = 0.0
 surface_k2D = -10.5
 depth_kappa = -18 #log of permeability at depth
+xstick = 110e3 # distance from trench transition from stick to sliding behavior occurs
+B = 0.8 # Skempton's coefficient
+
+# still in development - turn on ability to "frack" the elastic medium - ignore for now
 k_frack = 1e7 # increase in permeability during fracking
 percent_lith = .985 # what percent of lithostatic is your pore pressure?
 dehydrate_depths = 1e3*np.linspace(-30, -55, num=200, endpoint=False)
 h20flux = 2.5e-10
 dehydrate_flux = (h20flux/len(dehydrate_depths))*np.ones(len(dehydrate_depths))  # m/sec * dt
-xstick = 110e3 # distance from trench transition from stick to sliding behavior occurs
-B = 0.8 # Skempton's coefficient
 
 
 ##########################################################################
@@ -176,17 +170,12 @@ if loop == 'no':
 
 	print "Time elasped", (time.time() - start)/60.0, "minutes"
 
-	if plot_figs == 'yes':
-		interactive()  # hold the plot
-
 ##########################################################################
 ################  SO YOU WANT TO RUN A LOOP, EH?  ########################
 ##########################################################################
 
 if loop == 'yes':
 	
-	print "yes"
-
 	if loop_variable == 'kappa':
 		loop_through = np.arange(-10, -14, -1)  # make an array of the variable you want to loop through
 	elif loop_variable == 'sigma':
@@ -195,13 +184,6 @@ if loop == 'yes':
 		loop_through = np.arange(0.4, 1.0, 0.2)
 	elif loop_variable == 'cross':
 		loop_through = np.arange(110., 160., 5.)
-	elif loop_variable == 'mesh':
-		#loop_through = (['1000', '500', '100', '50'])
-		loop_through = ['500']
-	
-	print loop_through
-
-
 
 	for VAR in loop_through:
 		if loop_variable == 'kappa':
@@ -221,7 +203,6 @@ if loop == 'yes':
 				                 SSE_days2D, sub_cycle_years2D, sigma_b, xcenter2D, SS_migrate, u0_EQ, u0_SSE, u0_sub, surface_k2D,
 				                 ocean_k, VAR, loop, loop_variable, percent_lith, dehydrate_depths, dehydrate_flux, xstick,
 				                 depth_kappa, k_frack, crosssection)
-				
 		if loop_variable == 'cross':
 			if ndim == 2:
 				Poroelasticity2D(data_file, ndim, mesh2D, boundaries2D, plot_figs, event, new_mesh, permeability, days,
@@ -229,23 +210,6 @@ if loop == 'yes':
 				                 ocean_k, B, loop, loop_variable, percent_lith, dehydrate_depths, dehydrate_flux, xstick,
 				                 depth_kappa, k_frack, VAR)
 
-		if loop_variable == 'mesh':
-			
-			print i, type(i)
-			
-			mesh2D = Mesh(path + '/CR2D_topo_flat_' + i + '.xml')
-			boundaries2D = MeshFunction("size_t", mesh2D, path + '/CR2D_topo_' + i + '_facet_region.xml')
-
-			Laplace2Dsteady(data_file, origin, theta, ndim, mesh2D, boundaries2D, plot_figs, event, new_mesh, permeability, sub_cycle_years,
-			                                               surface_k, ocean_k, loop, i)
-
-
 
 	print "Time elasped", (time.time() - start)/60.0, "minutes"
-
-
-
-
-
-
 print "################### THE END ###########################"
