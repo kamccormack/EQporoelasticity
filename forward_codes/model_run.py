@@ -11,7 +11,7 @@ Units are in meters and MPa
 ########################### USER INPUTS ##################################
 
 ndim = Number of spatial dimensions - [2,3]
-event = type fo event - [EQ = earthquake, SSE = slow slip event, sub = subduction,
+event = type of event - [EQ = earthquake, SSE = slow slip event, sub = subduction,
 						sub_EQ = sub + EQ , topo = topography driven flow]
 plot_figs = Plot figures with fenics plotter? - [no,yes]
 loop =  Use last section to loop through a parameter such as surface permeability or event location - [no,yes]
@@ -27,7 +27,7 @@ permeability = Is the permeabilty a constant value or mapped variable? - [mapped
 sub_cycle_years = how many years between large earthquakes?
 SSE_days = How many days does a slow slip event last?
 days = For a SSE, run the model for how many days?
-sigma_b = = Std deviation from the center of slip for a gausian slip distribution
+sigma_b = = Std deviation from the center of slip for a Gaussian slip distribution
 xcenter = How far is the center of the slip patch from the trench?
 u0_EQ =  For an EQ, what was the max slip [meters]?
 u0_sub = subduction rate [m/yr]
@@ -39,7 +39,6 @@ EQ_type: 'data' - slip vectors input as an excel file,  'synthetic' - gaussian s
 		'inversion' - pull solution from inverse model run
 
 """
-
 
 from dolfin import *
 import numpy as np
