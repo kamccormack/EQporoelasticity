@@ -264,7 +264,7 @@ class Elasticity:
         self.coords_all = Vh[STATE].tabulate_dof_coordinates().reshape((Vh[STATE].dim(), -1))
         self.coords_b = self.coords_all[self.dof_slab, :]
 
-        check_slip = checkerboard(self.coords_b, 40e3)
+        check_slip = checkerboard(self.coords_b, 25e3)
         check_slip_func = Function(FunctionSpace(mesh, 'Lagrange', 1))
         check_slip_func.vector()[:] = 0.0
         check_slip_func.vector()[self.dof_slab] = check_slip
@@ -277,8 +277,8 @@ class Elasticity:
         print (time.time() - start) / 60.0, "minutes"
 
         self.AA = block_mat([[self.E_state, self.C_state,       0      ],   # u
-                             [    0       , self.RR_grad,   self.C_grad],   # v
-                             [self.Wuu    ,      0      ,    self.E_adj]])  # u0
+                             [    0       , self.RR_grad,   self.C_grad],   # u0
+                             [self.Wuu    ,      0      ,    self.E_adj]])  # v
 
         if self.synthetic:
             self.u_obs = self.computeObservation()
@@ -651,7 +651,7 @@ if __name__ == "__main__":
 
     ################ USER INPUTS ###############
 
-    point_var = True
+    point_var = False
     synthetic = False
     matern_reg = False
     
